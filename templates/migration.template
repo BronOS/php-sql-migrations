@@ -1,0 +1,25 @@
+<?php
+
+use BronOS\PhpSqlMigrations\AbstractMigration;
+
+/**
+ * @var \PDO $pdo
+ */
+return new class($pdo) extends AbstractMigration
+{
+    /**
+     * Upgrades database state.
+     */
+    public function up(): void
+    {
+        {up}
+    }
+
+    /**
+     * Downgrades database state.
+     */
+    public function down(): void
+    {
+        {down}
+    }
+};
