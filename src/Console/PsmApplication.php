@@ -31,52 +31,60 @@
 
 declare(strict_types=1);
 
-namespace BronOS\PhpSqlMigrations\FS;
+namespace BronOS\PhpSqlMigrations\Console;
 
 
-use BronOS\PhpSqlMigrations\Exception\PhpSqlMigrationsException;
-use SplFileInfo;
+use BronOS\PhpSqlMigrations\Console\Command\CreateCommand;
+use BronOS\PhpSqlMigrations\Console\Command\GenerateCommand;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Throwable;
 
 /**
- * SQL migrations directory.
+ * Psm CLI Application.
  *
  * @package   bronos\php-sql-migrations
  * @author    Oleg Bronzov <oleg.bronzov@gmail.com>
  * @copyright 2020
  * @license   https://opensource.org/licenses/MIT
  */
-interface MigrationsDirInterface
+class PsmApplication extends Application
 {
     /**
-     * @return string
+     * Initialize the Psm console application.
      */
-    public function getPath(): string;
+    public function __construct()
+    {
+        parent::__construct('Php SQL Migrations');
+
+        $this->addCommands([
+            new CreateCommand(),
+            new GenerateCommand(),
+        ]);
+    }
 
     /**
-     * Scans dir for migration files and returns it as an array
+     * Runs the current application.
      *
-     * @return SplFileInfo[]
+     * @param InputInterface  $input  An Input instance
+     * @param OutputInterface $output An Output instance
+     *
+     * @return int 0 if everything went fine, or an error code
+     *
+     * @throws Throwable
      */
-    public function scan(): array;
+    public function doRun(InputInterface $input, OutputInterface $output): int
+    {
+        // always show the version information except when the user invokes the help
+        // command as that already does it
+        if (($input->hasParameterOption(['--help', '-h']) !== false)
+            || ($input->getFirstArgument() !== null && $input->getFirstArgument() !== 'list')
+        ) {
+            $output->writeln($this->getLongVersion());
+            $output->writeln('');
+        }
 
-    /**
-     * Creates new migration file.
-     *
-     * @param string $migrationName
-     * @param string $content
-     *
-     * @return string
-     *
-     * @throws PhpSqlMigrationsException
-     */
-    public function create(string $migrationName, string $content): string;
-
-    /**
-     * Check whether migration is already exists.
-     *
-     * @param string $migrationName
-     *
-     * @return bool
-     */
-    public function isExists(string $migrationName): bool;
+        return parent::doRun($input, $output);
+    }
 }

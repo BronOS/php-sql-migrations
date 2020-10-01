@@ -31,52 +31,35 @@
 
 declare(strict_types=1);
 
-namespace BronOS\PhpSqlMigrations\FS;
+namespace BronOS\PhpSqlMigrations\Factory;
 
 
-use BronOS\PhpSqlMigrations\Exception\PhpSqlMigrationsException;
-use SplFileInfo;
+use BronOS\PhpSqlDiscovery\DefaultSQLDatabaseScanner;
+use BronOS\PhpSqlDiscovery\SQLDatabaseScannerInterface;
+use BronOS\PhpSqlMigrations\Config\PsmConfig;
+use PDO;
 
 /**
- * SQL migrations directory.
+ * SQL database scanner factory.
+ * Responsible for instantiating of SQL database scanner object.
  *
  * @package   bronos\php-sql-migrations
  * @author    Oleg Bronzov <oleg.bronzov@gmail.com>
  * @copyright 2020
  * @license   https://opensource.org/licenses/MIT
  */
-interface MigrationsDirInterface
+class DefaultDatabaseScannerFactory implements DatabaseScannerFactoryInterface
 {
     /**
-     * @return string
+     * Instantiates SQL database scanner object based on passed config.
+     *
+     * @param PsmConfig $config
+     * @param PDO       $pdo
+     *
+     * @return SQLDatabaseScannerInterface
      */
-    public function getPath(): string;
-
-    /**
-     * Scans dir for migration files and returns it as an array
-     *
-     * @return SplFileInfo[]
-     */
-    public function scan(): array;
-
-    /**
-     * Creates new migration file.
-     *
-     * @param string $migrationName
-     * @param string $content
-     *
-     * @return string
-     *
-     * @throws PhpSqlMigrationsException
-     */
-    public function create(string $migrationName, string $content): string;
-
-    /**
-     * Check whether migration is already exists.
-     *
-     * @param string $migrationName
-     *
-     * @return bool
-     */
-    public function isExists(string $migrationName): bool;
+    public function make(PsmConfig $config, PDO $pdo): SQLDatabaseScannerInterface
+    {
+        return new DefaultSQLDatabaseScanner($pdo);
+    }
 }

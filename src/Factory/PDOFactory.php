@@ -31,52 +31,50 @@
 
 declare(strict_types=1);
 
-namespace BronOS\PhpSqlMigrations\FS;
+namespace BronOS\PhpSqlMigrations\Factory;
 
 
-use BronOS\PhpSqlMigrations\Exception\PhpSqlMigrationsException;
-use SplFileInfo;
+use BronOS\PhpSqlMigrations\Config\PsmConfig;
+use PDO;
 
 /**
- * SQL migrations directory.
+ * PDO factory.
+ * Responsible for instantiating of PDO object.
  *
  * @package   bronos\php-sql-migrations
  * @author    Oleg Bronzov <oleg.bronzov@gmail.com>
  * @copyright 2020
  * @license   https://opensource.org/licenses/MIT
  */
-interface MigrationsDirInterface
+class PDOFactory implements PDOFactoryInterface
 {
     /**
-     * @return string
+     * Instantiates and returns PDO object based on passed config.
+     *
+     * @param PsmConfig $config
+     * @param string    $dbName
+     *
+     * @return PDO
      */
-    public function getPath(): string;
-
-    /**
-     * Scans dir for migration files and returns it as an array
-     *
-     * @return SplFileInfo[]
-     */
-    public function scan(): array;
-
-    /**
-     * Creates new migration file.
-     *
-     * @param string $migrationName
-     * @param string $content
-     *
-     * @return string
-     *
-     * @throws PhpSqlMigrationsException
-     */
-    public function create(string $migrationName, string $content): string;
-
-    /**
-     * Check whether migration is already exists.
-     *
-     * @param string $migrationName
-     *
-     * @return bool
-     */
-    public function isExists(string $migrationName): bool;
+    public function make(PsmConfig $config, string $dbName): PDO
+    {
+        return new \PDO(
+            sprintf(
+                '%s:host=%s;port=%s;dbname=%s;charset=%s',
+                $config->dbType,
+                $config->dbHost,
+                $config->dbPort,
+                $dbName,
+                'utf8',
+            ),
+            $config->dbUser,
+            $config->dbPass,
+            [
+                \PDO::ATTR_PERSISTENT => true,
+                \PDO::ATTR_EMULATE_PREPARES => true,
+                \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
+            ]
+        );
+    }
 }

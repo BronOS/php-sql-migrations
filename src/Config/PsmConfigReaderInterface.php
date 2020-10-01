@@ -31,52 +31,29 @@
 
 declare(strict_types=1);
 
-namespace BronOS\PhpSqlMigrations\FS;
+namespace BronOS\PhpSqlMigrations\Config;
 
 
 use BronOS\PhpSqlMigrations\Exception\PhpSqlMigrationsException;
-use SplFileInfo;
 
 /**
- * SQL migrations directory.
+ * PHP SQL Migrations config reader.
  *
  * @package   bronos\php-sql-migrations
  * @author    Oleg Bronzov <oleg.bronzov@gmail.com>
  * @copyright 2020
  * @license   https://opensource.org/licenses/MIT
  */
-interface MigrationsDirInterface
+interface PsmConfigReaderInterface
 {
     /**
-     * @return string
-     */
-    public function getPath(): string;
-
-    /**
-     * Scans dir for migration files and returns it as an array
+     * Parse/scan/read config file and build config object based on it.
      *
-     * @return SplFileInfo[]
-     */
-    public function scan(): array;
-
-    /**
-     * Creates new migration file.
+     * @param string $path
      *
-     * @param string $migrationName
-     * @param string $content
-     *
-     * @return string
+     * @return PsmConfig
      *
      * @throws PhpSqlMigrationsException
      */
-    public function create(string $migrationName, string $content): string;
-
-    /**
-     * Check whether migration is already exists.
-     *
-     * @param string $migrationName
-     *
-     * @return bool
-     */
-    public function isExists(string $migrationName): bool;
+    public function read(string $path): PsmConfig;
 }

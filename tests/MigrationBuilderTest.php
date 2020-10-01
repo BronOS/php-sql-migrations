@@ -9,9 +9,7 @@ use BronOS\PhpSqlMigrations\CodeGenerator\DefaultTemplateMigrationClassGenerator
 use BronOS\PhpSqlMigrations\DefaultMigrationBuilder;
 use BronOS\PhpSqlMigrations\FS\MigrationsDir;
 use BronOS\PhpSqlMigrations\MigrationBuilder;
-use BronOS\PhpSqlMigrations\QueryBuilder\DatabaseDiffQueryBuilder;
 use BronOS\PhpSqlMigrations\QueryBuilder\DefaultDatabaseDiffQueryBuilder;
-use BronOS\PhpSqlMigrations\QueryBuilder\TableDiffQueryBuilder;
 use BronOS\PhpSqlSchema\Column\DateTime\DateTimeColumn;
 use BronOS\PhpSqlSchema\Column\DateTime\TimestampColumn;
 use BronOS\PhpSqlSchema\Column\Numeric\IntColumn;
