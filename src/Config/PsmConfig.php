@@ -39,6 +39,7 @@ use BronOS\PhpSqlMigrations\Factory\DefaultDatabaseDifferFactory;
 use BronOS\PhpSqlMigrations\Factory\DefaultDatabaseDiffQueryBuilderFactory;
 use BronOS\PhpSqlMigrations\Factory\DefaultDatabaseScannerFactory;
 use BronOS\PhpSqlMigrations\Factory\DefaultMigrationBuilderFactory;
+use BronOS\PhpSqlMigrations\Factory\DefaultMigrationInformerFactory;
 use BronOS\PhpSqlMigrations\Factory\MigrationClassGeneratorFactory;
 use BronOS\PhpSqlMigrations\Factory\MigrationsDirFactory;
 use BronOS\PhpSqlMigrations\Factory\PDOFactory;
@@ -74,4 +75,5 @@ class PsmConfig
     public string $databaseDiffQueryBuilderFactoryClass = DefaultDatabaseDiffQueryBuilderFactory::class;
     public string $databaseScannerFactoryClass = DefaultDatabaseScannerFactory::class;
     public string $migrationBuilderFactoryClass = DefaultMigrationBuilderFactory::class;
+    public string $migrationInformerFactoryClass = DefaultMigrationInformerFactory::class;
 }

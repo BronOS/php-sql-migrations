@@ -52,6 +52,8 @@ abstract class AbstractMigration
     private const PDO_ERROR_CODE_SUCCESS = '00000';
 
     private PDO $pdo;
+    private bool $dryRun = false;
+    private array $executedQueries = [];
 
     /**
      * AbstractMigration constructor.
@@ -61,14 +63,6 @@ abstract class AbstractMigration
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
-    }
-
-    /**
-     * @return PDO
-     */
-    public function getPdo(): PDO
-    {
-        return $this->pdo;
     }
 
     /**
@@ -107,7 +101,7 @@ abstract class AbstractMigration
     {
         $sth = $this->execute($query);
 
-        if ($sth->errorCode() === self::PDO_ERROR_CODE_SUCCESS) {
+        if (is_null($sth->errorCode()) || $sth->errorCode() === self::PDO_ERROR_CODE_SUCCESS) {
             return true;
         }
 
@@ -126,17 +120,84 @@ abstract class AbstractMigration
      */
     protected function execute(string $query, array $binds = []): PDOStatement
     {
+        if ($this->dryRun) {
+            $query = $this->bind($query, $binds);
+        }
+
+        $this->executedQueries[] = $query;
+
         try {
             $sth = $this->pdo->prepare($query);
             if ($sth === false) {
                 throw new PDOException("Cannot prepare sql statement");
             }
 
+            if ($this->dryRun) {
+                return $sth;
+            }
+
             $sth->execute($binds);
         } catch (PDOException $e) {
-            throw new PhpSqlMigrationsException($e->getMessage(), (int)$e->getCode(), $e);
+            throw new PhpSqlMigrationsException($e->getMessage(), (int)$e->getCode());
         }
 
         return $sth;
+    }
+
+    /**
+     * @param string $query
+     * @param array  $binds
+     *
+     * @return string
+     */
+    private function bind(string $query, array $binds): string
+    {
+        $indexed = $binds == array_values($binds);
+
+        foreach ($binds as $k => $v) {
+            if (is_string($v)) {
+                $v = sprintf("'%s'", str_replace("'", "\\'", $v));
+            }
+
+            if ($indexed) {
+                $query = preg_replace('/\?/', $v, $query, 1);
+            } else {
+                $query = str_replace(":$k", $v, $query);
+            }
+        }
+
+        return $query;
+    }
+
+    /**
+     * @return array
+     */
+    public function getExecutedQueries(): array
+    {
+        return $this->executedQueries;
+    }
+
+    /**
+     * @return array
+     */
+    public function dryRunUp(): array
+    {
+        $this->dryRun = true;
+        $this->executedQueries = [];
+        $this->up();
+        $this->dryRun = false;
+        return $this->getExecutedQueries();
+    }
+
+    /**
+     * @return array
+     */
+    public function dryRunDown(): array
+    {
+        $this->dryRun = true;
+        $this->executedQueries = [];
+        $this->down();
+        $this->dryRun = false;
+        return $this->getExecutedQueries();
     }
 }

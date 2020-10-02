@@ -35,7 +35,10 @@ namespace BronOS\PhpSqlMigrations\Console;
 
 
 use BronOS\PhpSqlMigrations\Console\Command\CreateCommand;
+use BronOS\PhpSqlMigrations\Console\Command\DowngradeCommand;
 use BronOS\PhpSqlMigrations\Console\Command\GenerateCommand;
+use BronOS\PhpSqlMigrations\Console\Command\InfoCommand;
+use BronOS\PhpSqlMigrations\Console\Command\MigrateCommand;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -61,6 +64,9 @@ class PsmApplication extends Application
         $this->addCommands([
             new CreateCommand(),
             new GenerateCommand(),
+            new InfoCommand(),
+            new MigrateCommand(),
+            new DowngradeCommand(),
         ]);
     }
 
@@ -76,13 +82,13 @@ class PsmApplication extends Application
      */
     public function doRun(InputInterface $input, OutputInterface $output): int
     {
+        $output->writeln('');
         // always show the version information except when the user invokes the help
         // command as that already does it
         if (($input->hasParameterOption(['--help', '-h']) !== false)
             || ($input->getFirstArgument() !== null && $input->getFirstArgument() !== 'list')
         ) {
-            $output->writeln($this->getLongVersion());
-            $output->writeln('');
+            $output->writeln([$this->getLongVersion(), '']);
         }
 
         return parent::doRun($input, $output);

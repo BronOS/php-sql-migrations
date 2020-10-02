@@ -34,9 +34,19 @@ declare(strict_types=1);
 namespace BronOS\PhpSqlMigrations\Factory;
 
 
+use BronOS\PhpSqlDiscovery\DefaultSQLColumnScanner;
 use BronOS\PhpSqlDiscovery\DefaultSQLDatabaseScanner;
+use BronOS\PhpSqlDiscovery\DefaultSQLIndexScanner;
+use BronOS\PhpSqlDiscovery\DefaultSQLRelationScanner;
+use BronOS\PhpSqlDiscovery\Factory\DatabaseFactory;
+use BronOS\PhpSqlDiscovery\Factory\TableFactory;
+use BronOS\PhpSqlDiscovery\Repository\DefaultsRepository;
+use BronOS\PhpSqlDiscovery\SQLDatabaseScanner;
 use BronOS\PhpSqlDiscovery\SQLDatabaseScannerInterface;
+use BronOS\PhpSqlDiscovery\SQLIndexScanner;
+use BronOS\PhpSqlDiscovery\SQLTableScanner;
 use BronOS\PhpSqlMigrations\Config\PsmConfig;
+use BronOS\PhpSqlMigrations\Repository\TableRepository;
 use PDO;
 
 /**
@@ -60,6 +70,19 @@ class DefaultDatabaseScannerFactory implements DatabaseScannerFactoryInterface
      */
     public function make(PsmConfig $config, PDO $pdo): SQLDatabaseScannerInterface
     {
-        return new DefaultSQLDatabaseScanner($pdo);
+        return new SQLDatabaseScanner(
+            new SQLTableScanner(
+                new TableRepository(
+                    $pdo,
+                    $config->migrationsTable
+                ),
+                new TableFactory(),
+                new DefaultSQLIndexScanner($pdo),
+                new DefaultSQLRelationScanner($pdo),
+                new DefaultSQLColumnScanner($pdo)
+            ),
+            new DefaultsRepository($pdo),
+            new DatabaseFactory()
+        );
     }
 }

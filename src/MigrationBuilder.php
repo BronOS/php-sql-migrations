@@ -38,6 +38,7 @@ use BronOS\PhpSqlDiff\SQLDatabaseDifferInterface;
 use BronOS\PhpSqlDiscovery\Exception\PhpSqlDiscoveryException;
 use BronOS\PhpSqlDiscovery\SQLDatabaseScannerInterface;
 use BronOS\PhpSqlMigrations\CodeGenerator\MigrationClassGeneratorInterface;
+use BronOS\PhpSqlMigrations\Config\PsmConfig;
 use BronOS\PhpSqlMigrations\Exception\PhpSqlMigrationsException;
 use BronOS\PhpSqlMigrations\FS\MigrationsDirInterface;
 use BronOS\PhpSqlMigrations\QueryBuilder\DatabaseDiffQueryBuilderInterface;
@@ -69,6 +70,7 @@ class MigrationBuilder implements MigrationBuilderInterface
     private SQLDatabaseScannerInterface $scanner;
     private SQLDatabaseDifferInterface $differ;
     private MigrationsDirInterface $migrationsDir;
+    private PsmConfig $config;
 
     /**
      * SQLMigrationBuilder constructor.
@@ -79,6 +81,7 @@ class MigrationBuilder implements MigrationBuilderInterface
      * @param SQLDatabaseScannerInterface       $scanner
      * @param SQLDatabaseDifferInterface        $differ
      * @param MigrationsDirInterface            $migrationsDir
+     * @param PsmConfig                         $config
      */
     public function __construct(
         PDO $pdo,
@@ -86,7 +89,8 @@ class MigrationBuilder implements MigrationBuilderInterface
         MigrationClassGeneratorInterface $classGenerator,
         SQLDatabaseScannerInterface $scanner,
         SQLDatabaseDifferInterface $differ,
-        MigrationsDirInterface $migrationsDir
+        MigrationsDirInterface $migrationsDir,
+        PsmConfig $config
     ) {
         $this->pdo = $pdo;
         $this->queryBuilder = $queryBuilder;
@@ -94,6 +98,7 @@ class MigrationBuilder implements MigrationBuilderInterface
         $this->differ = $differ;
         $this->classGenerator = $classGenerator;
         $this->migrationsDir = $migrationsDir;
+        $this->config = $config;
     }
 
     /**

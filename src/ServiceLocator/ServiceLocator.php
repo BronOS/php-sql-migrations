@@ -44,11 +44,16 @@ use BronOS\PhpSqlMigrations\Factory\DatabaseScannerFactoryInterface;
 use BronOS\PhpSqlMigrations\Factory\DatabaseSchemaFactoryInterface;
 use BronOS\PhpSqlMigrations\Factory\MigrationBuilderFactoryInterface;
 use BronOS\PhpSqlMigrations\Factory\MigrationClassGeneratorFactoryInterface;
+use BronOS\PhpSqlMigrations\Factory\MigrationInformerFactoryInterface;
 use BronOS\PhpSqlMigrations\Factory\MigrationsDirFactoryInterface;
 use BronOS\PhpSqlMigrations\Factory\PDOFactoryInterface;
 use BronOS\PhpSqlMigrations\FS\MigrationsDirInterface;
+use BronOS\PhpSqlMigrations\Info\MigrationInformerInterface;
 use BronOS\PhpSqlMigrations\MigrationBuilderInterface;
 use BronOS\PhpSqlMigrations\QueryBuilder\DatabaseDiffQueryBuilderInterface;
+use BronOS\PhpSqlMigrations\Repository\MigrationModelFactory;
+use BronOS\PhpSqlMigrations\Repository\MigrationsRepository;
+use BronOS\PhpSqlMigrations\Repository\MigrationsRepositoryInterface;
 use BronOS\PhpSqlSchema\SQLDatabaseSchema;
 use PDO;
 
@@ -173,6 +178,18 @@ class ServiceLocator implements ServiceLocatorInterface
     }
 
     /**
+     * @return MigrationInformerFactoryInterface
+     */
+    public function getMigrationInformerFactory(): MigrationInformerFactoryInterface
+    {
+        if (!isset($this->registry[MigrationInformerFactoryInterface::class])) {
+            $this->registry[MigrationInformerFactoryInterface::class] = new $this->config->migrationInformerFactoryClass;
+        }
+
+        return $this->registry[MigrationInformerFactoryInterface::class];
+    }
+
+    /**
      * @return PDO
      */
     public function getPdo(): PDO
@@ -290,5 +307,37 @@ class ServiceLocator implements ServiceLocatorInterface
         }
 
         return $this->registry[SQLDatabaseDifferInterface::class];
+    }
+
+    /**
+     * @return MigrationInformerInterface
+     */
+    public function getMigrationInformer(): MigrationInformerInterface
+    {
+        if (!isset($this->registry[MigrationInformerInterface::class])) {
+            $this->registry[MigrationInformerInterface::class] = $this->getMigrationInformerFactory()->make(
+                $this->config,
+                $this->getMigrationsRepository(),
+                $this->getMigrationsDir()
+            );
+        }
+
+        return $this->registry[MigrationInformerInterface::class];
+    }
+
+    /**
+     * @return MigrationsRepositoryInterface
+     */
+    public function getMigrationsRepository(): MigrationsRepositoryInterface
+    {
+        if (!isset($this->registry[MigrationsRepositoryInterface::class])) {
+            $this->registry[MigrationsRepositoryInterface::class] = new MigrationsRepository(
+                $this->getPdo(),
+                new MigrationModelFactory(),
+                $this->config->migrationsTable
+            );
+        }
+
+        return $this->registry[MigrationsRepositoryInterface::class];
     }
 }

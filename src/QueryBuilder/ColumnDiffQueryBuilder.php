@@ -109,14 +109,16 @@ class ColumnDiffQueryBuilder implements ColumnDiffQueryBuilderInterface
 
         return new MigrationQuery(
             [
-                sprintf("ALTER TABLE `%s` CHANGE COLUMN %s;",
+                sprintf("ALTER TABLE `%s` CHANGE COLUMN `%s` %s;",
                     $tableName,
+                    $diff->getSourceObject()->getName(),
                     $this->buildSignature($diff->getSourceObject(), $defaultCharset)
                 ),
             ],
             [
-                sprintf("ALTER TABLE `%s` CHANGE COLUMN %s;",
+                sprintf("ALTER TABLE `%s` CHANGE COLUMN `%s` %s;",
                     $tableName,
+                    $diff->getTargetObject()->getName(),
                     $this->buildSignature($diff->getTargetObject(), $defaultCharset)
                 ),
             ],

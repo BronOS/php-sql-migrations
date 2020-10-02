@@ -7,6 +7,7 @@ use BronOS\PhpSqlDiff\DefaultSQLDatabaseDiffer;
 use BronOS\PhpSqlDiscovery\DefaultSQLDatabaseScanner;
 use BronOS\PhpSqlMigrations\CodeGenerator\DefaultTemplateMigrationClassGenerator;
 use BronOS\PhpSqlMigrations\DefaultMigrationBuilder;
+use BronOS\PhpSqlMigrations\Exception\PhpSqlMigrationsException;
 use BronOS\PhpSqlMigrations\FS\MigrationsDir;
 use BronOS\PhpSqlMigrations\MigrationBuilder;
 use BronOS\PhpSqlMigrations\QueryBuilder\DefaultDatabaseDiffQueryBuilder;
@@ -22,6 +23,7 @@ use BronOS\PhpSqlSchema\Relation\Action\CascadeAction;
 use BronOS\PhpSqlSchema\Relation\ForeignKey;
 use BronOS\PhpSqlSchema\SQLDatabaseSchema;
 use BronOS\PhpSqlSchema\SQLTableSchema;
+use PDOException;
 
 class MigrationBuilderTest extends BaseTestCase
 {
@@ -174,5 +176,29 @@ return new class($pdo) extends AbstractMigration
         $this->assertEquals($template, $res);
 
         unlink($mfp);
+    }
+
+    public function testXXX()
+    {
+        $pdo = $this->getPdo();
+
+        try {
+            $sth = $pdo->prepare('SELECT * FROM blog WHERE title LOKE ?');
+            $sth->bindValue(1, 'title');
+            if ($sth === false) {
+                throw new PDOException("Cannot prepare sql statement");
+            }
+
+//            return $sth;
+
+//            $sth->execute([]);
+        } catch (PDOException $e) {
+            throw new PhpSqlMigrationsException($e->getMessage(), (int)$e->getCode(), $e);
+        }
+
+        echo "<pre>";
+        var_dump($sth->debugDumpParams());
+        echo "</pre>";
+        die();
     }
 }

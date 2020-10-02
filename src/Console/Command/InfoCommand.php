@@ -35,6 +35,9 @@ namespace BronOS\PhpSqlMigrations\Console\Command;
 
 
 use BronOS\PhpSqlDiscovery\Exception\PhpSqlDiscoveryException;
+use BronOS\PhpSqlMigrations\Exception\PhpSqlMigrationsException;
+use BronOS\PhpSqlMigrations\Info\MigrationInfoState;
+use BronOS\PhpSqlMigrations\Repository\MigrationModel;
 use BronOS\PhpSqlSchema\Exception\DuplicateColumnException;
 use BronOS\PhpSqlSchema\Exception\DuplicateIndexException;
 use BronOS\PhpSqlSchema\Exception\DuplicateRelationException;
@@ -47,21 +50,20 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Generate command.
- * Responsible for generation of new migration script
- * based on diff between current database state and schema object.
+ * Info command.
+ * Responsible for finding differences between migration files and database state.
  *
  * @package   bronos\php-sql-migrations
  * @author    Oleg Bronzov <oleg.bronzov@gmail.com>
  * @copyright 2020
  * @license   https://opensource.org/licenses/MIT
  */
-class GenerateCommand extends AbstractCommand
+class InfoCommand extends AbstractCommand
 {
     /**
      * @var string|null
      */
-    protected static $defaultName = 'generate';
+    protected static $defaultName = 'info';
 
     /**
      * Configures the current command.
@@ -72,18 +74,9 @@ class GenerateCommand extends AbstractCommand
     {
         parent::configure();
 
-        $this->setDescription('Generates new migration script based on diff between current database state and schema object')
-            ->addOption(
-                '--dry-run',
-                '-x',
-                InputOption::VALUE_NONE,
-                'Dumps diff queries (if any) instead of generate migration script'
-            )->addArgument(
-                'name',
-                InputArgument::OPTIONAL,
-                'The name of the migration'
-            )->setHelp(sprintf(
-                '%sGenerates new migration script based on diff between current database state and schema object%s',
+        $this->setDescription('Finds differences between migration files and database state')
+            ->setHelp(sprintf(
+                '%sFinds differences between migration files and database state%s',
                 PHP_EOL,
                 PHP_EOL
             ));
@@ -103,12 +96,7 @@ class GenerateCommand extends AbstractCommand
      *
      * @return int 0 if everything went fine, or an exit code
      *
-     * @throws PhpSqlDiscoveryException
-     * @throws DuplicateColumnException
-     * @throws DuplicateIndexException
-     * @throws DuplicateRelationException
-     * @throws DuplicateTableException
-     * @throws SQLTableSchemaDeclarationException
+     * @throws PhpSqlMigrationsException
      *
      * @see setCode()
      */
@@ -116,35 +104,74 @@ class GenerateCommand extends AbstractCommand
     {
         $style = new SymfonyStyle($input, $output);
 
-        if ($input->getOption('dry-run')) {
-            $style->warning("Dry run mode. Migration script hasn't been generated.");
+        $infoList = $this->getServiceLocator()->getMigrationInformer()->find();
 
-            $mq = $this->getServiceLocator()->getMigrationBuilder()->buildQueries(
-                $this->getServiceLocator()->getDatabaseSchema()
-            );
+        if (count($infoList) == 0) {
+            $style->error('No info');
 
-            if (is_null($mq)) {
-                $style->error('No any diff queries has been found');
-                return self::FAILURE;
-            }
-
-            $output->writeln([
-                '<info>Diff queries:</info>',
-                '----------------------------------------------------',
-            ]);
-
-            $output->writeln($mq->getUpQueries());
-
-            return self::SUCCESS;
+            return self::FAILURE;
         }
 
-        $path = $this->getServiceLocator()->getMigrationBuilder()->generate(
-            $input->getArgument('name'),
-            $this->getServiceLocator()->getDatabaseSchema()
-        );
+        $rows = [];
 
-        $style->success($path);
+        foreach ($infoList as $migrationInfo) {
+            $rows[] = [
+                sprintf(
+                    '<fg=%s>%s</>',
+                    $this->getColor($migrationInfo->getState()),
+                    $migrationInfo->getName()
+                ),
+                sprintf(
+                    '<fg=%s>%s</>',
+                    $this->getColor($migrationInfo->getState()),
+                    $migrationInfo->getState()->getOptionName()
+                ),
+                sprintf(
+                    '<fg=%s>%s</>',
+                    $this->getColor($migrationInfo->getState()),
+                    $this->getLastUpdatedDate($migrationInfo->getModel())
+                ),
+            ];
+        }
+
+        $style->table([
+            'Name',
+            'State',
+            'Last execution',
+        ], $rows);
 
         return self::SUCCESS;
+    }
+
+    /**
+     * @param MigrationModel|null $model
+     *
+     * @return string
+     */
+    private function getLastUpdatedDate(?MigrationModel $model): string
+    {
+        if (is_null($model)) {
+            return '';
+        }
+
+        $dt = $model->getCreatedAt();
+        if (!is_null($model->getUpdatedAt())) {
+            $dt = $model->getUpdatedAt();
+        }
+
+        return $dt->format('Y-m-d H:i:s');
+    }
+
+    private function getColor(MigrationInfoState $state): string
+    {
+        if ($state->isDeleted()) {
+            return 'red';
+        }
+
+        if ($state->isApplied()) {
+            return 'magenta';
+        }
+
+        return 'white';
     }
 }

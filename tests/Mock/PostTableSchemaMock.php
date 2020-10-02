@@ -49,7 +49,7 @@ class PostTableSchemaMock extends SQLTableSchema
         parent::__construct(self::NAME, [
             new IntColumn('id', 11, true, true),
             new IntColumn('blog_id', 11, true),
-            new VarCharColumn('title', 250),
+            new VarCharColumn('title', 150),
             new TextColumn('description', false, true, true),
             new DateTimeColumn('created_at', true),
             new TimestampColumn('updated_at', false, true, '0000-00-00 00:00:00'),

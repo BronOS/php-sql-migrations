@@ -82,6 +82,10 @@ class BaseTestCase extends TestCase
               CONSTRAINT `post_ibfk_1` FOREIGN KEY (`blog_id`) REFERENCES `blog` (`id`) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+            INSERT INTO `blog` (`id`, `title`)
+            VALUES
+                (1, 'my blog 1');
+
             SET FOREIGN_KEY_CHECKS=1;
         SQL;
 

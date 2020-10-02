@@ -34,58 +34,35 @@ declare(strict_types=1);
 namespace BronOS\PhpSqlMigrations\Factory;
 
 
-use BronOS\PhpSqlDiff\SQLDatabaseDifferInterface;
-use BronOS\PhpSqlDiscovery\SQLDatabaseScannerInterface;
-use BronOS\PhpSqlMigrations\CodeGenerator\MigrationClassGeneratorInterface;
 use BronOS\PhpSqlMigrations\Config\PsmConfig;
 use BronOS\PhpSqlMigrations\FS\MigrationsDirInterface;
-use BronOS\PhpSqlMigrations\MigrationBuilder;
-use BronOS\PhpSqlMigrations\MigrationBuilderInterface;
-use BronOS\PhpSqlMigrations\QueryBuilder\DatabaseDiffQueryBuilderInterface;
+use BronOS\PhpSqlMigrations\Info\MigrationInformerInterface;
+use BronOS\PhpSqlMigrations\Repository\MigrationsRepositoryInterface;
 use PDO;
 
 /**
- * Migration builder factory.
- * Responsible for instantiating of migration builder object.
+ * Migration informer factory.
+ * Responsible for instantiating of migration informer object.
  *
  * @package   bronos\php-sql-migrations
  * @author    Oleg Bronzov <oleg.bronzov@gmail.com>
  * @copyright 2020
  * @license   https://opensource.org/licenses/MIT
  */
-class DefaultMigrationBuilderFactory implements MigrationBuilderFactoryInterface
+interface MigrationInformerFactoryInterface
 {
     /**
-     * Instantiates migration builder object based on passed config.
+     * Instantiates migration informer object based on passed config.
      *
-     * @param PsmConfig                         $config
+     * @param PsmConfig $config
+     * @param MigrationsRepositoryInterface $repository
+     * @param MigrationsDirInterface $dir
      *
-     * @param PDO                               $pdo
-     * @param DatabaseDiffQueryBuilderInterface $queryBuilder
-     * @param MigrationClassGeneratorInterface  $classGenerator
-     * @param SQLDatabaseScannerInterface       $scanner
-     * @param SQLDatabaseDifferInterface        $differ
-     * @param MigrationsDirInterface            $migrationsDir
-     *
-     * @return MigrationBuilderInterface
+     * @return MigrationInformerInterface
      */
     public function make(
         PsmConfig $config,
-        PDO $pdo,
-        DatabaseDiffQueryBuilderInterface $queryBuilder,
-        MigrationClassGeneratorInterface $classGenerator,
-        SQLDatabaseScannerInterface $scanner,
-        SQLDatabaseDifferInterface $differ,
-        MigrationsDirInterface $migrationsDir
-    ): MigrationBuilderInterface {
-        return new MigrationBuilder(
-            $pdo,
-            $queryBuilder,
-            $classGenerator,
-            $scanner,
-            $differ,
-            $migrationsDir,
-            $config
-        );
-    }
+        MigrationsRepositoryInterface $repository,
+        MigrationsDirInterface $dir
+    ): MigrationInformerInterface;
 }
