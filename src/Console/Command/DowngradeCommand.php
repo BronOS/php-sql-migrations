@@ -173,7 +173,7 @@ class DowngradeCommand extends AbstractCommand
         }
 
         foreach ($infoList as $info) {
-            if ($info->getState()->isApplied()) {
+            if (!$info->getState()->isDeleted()) {
                 $style->title($info->getName());
 
                 $migrationObject = $this->getMigrationObject($info->getFileInfo()->getPathname());
