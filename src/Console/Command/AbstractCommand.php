@@ -36,13 +36,6 @@ namespace BronOS\PhpSqlMigrations\Console\Command;
 
 use BronOS\PhpSqlMigrations\Config\PsmConfig;
 use BronOS\PhpSqlMigrations\Exception\PhpSqlMigrationsException;
-use BronOS\PhpSqlMigrations\Factory\DatabaseDifferFactoryInterface;
-use BronOS\PhpSqlMigrations\Factory\DatabaseScannerFactoryInterface;
-use BronOS\PhpSqlMigrations\Factory\DatabaseSchemaFactoryInterface;
-use BronOS\PhpSqlMigrations\Factory\MigrationClassGeneratorFactoryInterface;
-use BronOS\PhpSqlMigrations\Factory\MigrationsDirFactoryInterface;
-use BronOS\PhpSqlMigrations\Factory\PDOFactoryInterface;
-use BronOS\PhpSqlMigrations\MigrationBuilderInterface;
 use BronOS\PhpSqlMigrations\ServiceLocator\ServiceLocator;
 use BronOS\PhpSqlMigrations\ServiceLocator\ServiceLocatorInterface;
 use Symfony\Component\Console\Command\Command;

@@ -35,7 +35,6 @@ namespace BronOS\PhpSqlMigrations\Factory;
 
 
 use BronOS\PhpSqlDiscovery\DefaultSQLColumnScanner;
-use BronOS\PhpSqlDiscovery\DefaultSQLDatabaseScanner;
 use BronOS\PhpSqlDiscovery\DefaultSQLIndexScanner;
 use BronOS\PhpSqlDiscovery\DefaultSQLRelationScanner;
 use BronOS\PhpSqlDiscovery\Factory\DatabaseFactory;
@@ -43,7 +42,6 @@ use BronOS\PhpSqlDiscovery\Factory\TableFactory;
 use BronOS\PhpSqlDiscovery\Repository\DefaultsRepository;
 use BronOS\PhpSqlDiscovery\SQLDatabaseScanner;
 use BronOS\PhpSqlDiscovery\SQLDatabaseScannerInterface;
-use BronOS\PhpSqlDiscovery\SQLIndexScanner;
 use BronOS\PhpSqlDiscovery\SQLTableScanner;
 use BronOS\PhpSqlMigrations\Config\PsmConfig;
 use BronOS\PhpSqlMigrations\Repository\TableRepository;

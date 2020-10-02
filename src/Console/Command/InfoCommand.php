@@ -34,18 +34,10 @@ declare(strict_types=1);
 namespace BronOS\PhpSqlMigrations\Console\Command;
 
 
-use BronOS\PhpSqlDiscovery\Exception\PhpSqlDiscoveryException;
 use BronOS\PhpSqlMigrations\Exception\PhpSqlMigrationsException;
 use BronOS\PhpSqlMigrations\Info\MigrationInfoState;
 use BronOS\PhpSqlMigrations\Repository\MigrationModel;
-use BronOS\PhpSqlSchema\Exception\DuplicateColumnException;
-use BronOS\PhpSqlSchema\Exception\DuplicateIndexException;
-use BronOS\PhpSqlSchema\Exception\DuplicateRelationException;
-use BronOS\PhpSqlSchema\Exception\DuplicateTableException;
-use BronOS\PhpSqlSchema\Exception\SQLTableSchemaDeclarationException;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 

@@ -38,10 +38,7 @@ use BronOS\PhpSqlMigrations\Config\PsmConfig;
 use BronOS\PhpSqlMigrations\FS\MigrationsDirInterface;
 use BronOS\PhpSqlMigrations\Info\MigrationInformer;
 use BronOS\PhpSqlMigrations\Info\MigrationInformerInterface;
-use BronOS\PhpSqlMigrations\Repository\MigrationModelFactory;
-use BronOS\PhpSqlMigrations\Repository\MigrationsRepository;
 use BronOS\PhpSqlMigrations\Repository\MigrationsRepositoryInterface;
-use PDO;
 
 /**
  * Migration informer factory.
