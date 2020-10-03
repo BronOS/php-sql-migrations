@@ -9,27 +9,13 @@
       "email": "oleg.bronzov@gmail.com"
     }
   ],
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "git@github.com:BronOS/php-sql-schema.git"
-    },
-    {
-      "type": "vcs",
-      "url": "git@github.com:BronOS/php-sql-discovery.git"
-    },
-    {
-      "type": "vcs",
-      "url": "git@github.com:BronOS/php-sql-diff.git"
-    }
-  ],
   "require": {
     "php": ">=7.4",
     "ext-pdo": "*",
     "bronos/php-enum": "*",
-    "bronos/php-sql-schema": "dev-master",
-    "bronos/php-sql-diff": "dev-master",
-    "bronos/php-sql-discovery": "dev-master",
+    "bronos/php-sql-schema": "1.*",
+    "bronos/php-sql-diff": "1.*",
+    "bronos/php-sql-discovery": "1.*",
     "symfony/console": "*"
   },
   "require-dev": {
