@@ -30,8 +30,6 @@
  * @license   https://opensource.org/licenses/MIT
  */
 
-declare(strict_types=1);
-
 
 use BronOS\PhpSqlMigrations\Console\PsmApplication;
 
