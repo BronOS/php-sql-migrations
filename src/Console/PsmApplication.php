@@ -54,6 +54,14 @@ use Throwable;
  */
 class PsmApplication extends Application
 {
+    public static array $commands = [
+        CreateCommand::class,
+        GenerateCommand::class,
+        InfoCommand::class,
+        MigrateCommand::class,
+        DowngradeCommand::class,
+    ];
+
     /**
      * Initialize the Psm console application.
      */
@@ -61,13 +69,9 @@ class PsmApplication extends Application
     {
         parent::__construct('Php SQL Migrations');
 
-        $this->addCommands([
-            new CreateCommand(),
-            new GenerateCommand(),
-            new InfoCommand(),
-            new MigrateCommand(),
-            new DowngradeCommand(),
-        ]);
+        $this->addCommands(array_map(function (string $cls) {
+            return new $cls();
+        }, static::$commands));
     }
 
     /**
