@@ -55,8 +55,8 @@ class TableDiffQueryBuilder implements TableDiffQueryBuilderInterface
     /**
      * TableDiffQueryBuilder constructor.
      *
-     * @param ColumnDiffQueryBuilderInterface $columnQB
-     * @param IndexDiffQueryBuilderInterface $indexQB
+     * @param ColumnDiffQueryBuilderInterface   $columnQB
+     * @param IndexDiffQueryBuilderInterface    $indexQB
      * @param RelationDiffQueryBuilderInterface $relationQB
      */
     public function __construct(
@@ -178,24 +178,6 @@ class TableDiffQueryBuilder implements TableDiffQueryBuilderInterface
     }
 
     /**
-     * @param string[] $list
-     *
-     * @return array
-     */
-    private function sort(array $list): array
-    {
-        usort($list, function (string $query1, string $query2) {
-            if (strpos($query1, "DROP") === false) {
-                return 1;
-            }
-
-            return -1;
-        });
-
-        return $list;
-    }
-
-    /**
      * @param SQLTableSchemaInterface $schema
      * @param string                  $defaultCharset
      *
@@ -203,7 +185,14 @@ class TableDiffQueryBuilder implements TableDiffQueryBuilderInterface
      */
     private function getCreateTable(SQLTableSchemaInterface $schema, string $defaultCharset): string
     {
-        $query = sprintf("CREATE TABLE `%s` (\n", $schema->getName());
+        $query = sprintf("SET AUTOCOMMIT = 0;\n" .
+            "SET FOREIGN_KEY_CHECKS = 0;\n" .
+            "SET UNIQUE_CHECKS = 0;\n" .
+            "DROP TABLE IF EXISTS `%s`;\n",
+            $schema->getName()
+        );
+        $query .= sprintf("CREATE TABLE `%s` (\n", $schema->getName());
+
         $parts = [];
 
         foreach ($schema->getColumns() as $column) {
@@ -232,7 +221,10 @@ class TableDiffQueryBuilder implements TableDiffQueryBuilderInterface
             $query .= sprintf(" COLLATE=%s", $schema->getCollation());
         }
 
-        return $query . ';';
+        return $query . ";\n" .
+            "SET AUTOCOMMIT = 1;\n" .
+            "SET FOREIGN_KEY_CHECKS = 1;\n" .
+            "SET UNIQUE_CHECKS = 1;\n";
     }
 
     /**
@@ -255,5 +247,23 @@ class TableDiffQueryBuilder implements TableDiffQueryBuilderInterface
     private function getDropTable(string $tableName): string
     {
         return sprintf("DROP TABLE `%s`;", $tableName);
+    }
+
+    /**
+     * @param string[] $list
+     *
+     * @return array
+     */
+    private function sort(array $list): array
+    {
+        usort($list, function (string $query1, string $query2) {
+            if (strpos($query1, "DROP") === false) {
+                return 1;
+            }
+
+            return -1;
+        });
+
+        return $list;
     }
 }

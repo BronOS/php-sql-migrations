@@ -154,12 +154,12 @@ class MigrateCommand extends AbstractCommand
                     $output->writeln(['', '']);
                 } else {
                     $migrationObject->up();
+                    $output->writeln($migrationObject->getExecutedQueries());
+                    $output->writeln('');
                     $this->getServiceLocator()->getMigrationsRepository()->insertOrUpdate(
                         $info->getName(),
                         implode("\n", $migrationObject->dryRunDown())
                     );
-                    $output->writeln($migrationObject->getExecutedQueries());
-                    $output->writeln('');
                     $style->success('Success');
                 }
             }
