@@ -48,6 +48,7 @@ use BronOS\PhpSqlSchema\Column\Attribute\SizeColumnAttributeInterface;
 use BronOS\PhpSqlSchema\Column\Attribute\UnsignedColumnAttributeInterface;
 use BronOS\PhpSqlSchema\Column\Attribute\ZerofillColumnAttributeInterface;
 use BronOS\PhpSqlSchema\Column\ColumnInterface;
+use BronOS\PhpSqlSchema\Column\DateTime\TimestampColumnInterface;
 
 /**
  * SQL diff query builder.
@@ -174,6 +175,10 @@ class ColumnDiffQueryBuilder implements ColumnDiffQueryBuilderInterface
     {
         if (!$column->isNullable()) {
             return ' NOT NULL';
+        }
+
+        if ($column instanceof TimestampColumnInterface) {
+            return ' NULL';
         }
 
         return '';
