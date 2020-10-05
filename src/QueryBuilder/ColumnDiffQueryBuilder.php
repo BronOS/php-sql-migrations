@@ -206,7 +206,11 @@ class ColumnDiffQueryBuilder implements ColumnDiffQueryBuilderInterface
     private function getOnUpdateTimestamp(ColumnInterface $column): string
     {
         if ($column instanceof OnUpdateTimestampColumnAttributeInterface && $column->isOnUpdateTimestamp()) {
-            return ' ON UPDATE current_timestamp()';
+            $size = '';
+            if ($column instanceof SizeColumnAttributeInterface && $column->getSize() > 0) {
+                $size = $column->getSize();
+            }
+            return sprintf(' ON UPDATE current_timestamp(%s)', $size);
         }
 
         return '';
@@ -248,7 +252,11 @@ class ColumnDiffQueryBuilder implements ColumnDiffQueryBuilderInterface
     private function getDefault(ColumnInterface $column): string
     {
         if ($column instanceof DefaultTimestampColumnAttributeInterface && $column->isDefaultTimestamp()) {
-            return ' DEFAULT current_timestamp()';
+            $size = '';
+            if ($column instanceof SizeColumnAttributeInterface && $column->getSize() > 0) {
+                $size = $column->getSize();
+            }
+            return sprintf(' DEFAULT current_timestamp(%s)', $size);
         } elseif ($column->isDefaultNull() || ($column->isNullable() && is_null($column->getDefault()))) {
             return ' DEFAULT NULL';
         } elseif (!is_null($column->getDefault())) {
@@ -281,7 +289,9 @@ class ColumnDiffQueryBuilder implements ColumnDiffQueryBuilderInterface
                 )
             );
         } elseif ($column instanceof SizeColumnAttributeInterface) {
-            $str .= sprintf('(%s)', $column->getSize());
+            if ($column->getSize() > 0) {
+                $str .= sprintf('(%s)', $column->getSize());
+            }
         } elseif ($column instanceof DecimalSizeColumnAttributeInterface
             || ($column instanceof FloatSizeColumnAttributeInterface && !is_null($column->getPrecision()))
         ) {
