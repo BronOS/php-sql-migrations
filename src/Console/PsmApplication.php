@@ -86,6 +86,7 @@ class PsmApplication extends Application
      */
     public function doRun(InputInterface $input, OutputInterface $output): int
     {
+        $this->setEnv();
         $output->writeln('');
         // always show the version information except when the user invokes the help
         // command as that already does it
@@ -96,5 +97,23 @@ class PsmApplication extends Application
         }
 
         return parent::doRun($input, $output);
+    }
+
+    /**
+     * Applied ENV from ".env" file.
+     */
+    private function setEnv(): void
+    {
+        $fp = __WORKDIR__ . DIRECTORY_SEPARATOR . '.env';
+        if (file_exists($fp)) {
+            $fc = file_get_contents($fp);
+
+            foreach (explode("\n", $fc) as $line) {
+                $line = trim($line);
+                if (!empty($line)) {
+                    putenv($line);
+                }
+            }
+        }
     }
 }
