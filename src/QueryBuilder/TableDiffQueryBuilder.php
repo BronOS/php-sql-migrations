@@ -35,6 +35,7 @@ namespace BronOS\PhpSqlMigrations\QueryBuilder;
 
 
 use BronOS\PhpSqlDiff\Diff\TableDiff;
+use BronOS\PhpSqlSchema\Index\PrimaryKeyInterface;
 use BronOS\PhpSqlSchema\SQLTableSchemaInterface;
 
 /**
@@ -194,12 +195,23 @@ class TableDiffQueryBuilder implements TableDiffQueryBuilderInterface
         $query .= sprintf("CREATE TABLE `%s` (\n", $schema->getName());
 
         $parts = [];
+        $pkFlag = false;
 
         foreach ($schema->getColumns() as $column) {
-            $parts[] = $this->columnQB->buildSignature($column, $schema->getCharset() ?? $defaultCharset);
+            $q = $this->columnQB->buildSignature($column, $schema->getCharset() ?? $defaultCharset);
+
+            if (strpos('PRIMARY KEY', $q) !== false) {
+                $pkFlag = true;
+            }
+
+            $parts[] = $q;
         }
 
         foreach ($schema->getIndexes() as $index) {
+            if ($pkFlag && $index instanceof PrimaryKeyInterface) {
+                continue;
+            }
+
             $parts[] = $this->indexQB->buildSignature($index);
         }
 
