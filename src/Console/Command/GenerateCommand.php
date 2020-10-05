@@ -35,6 +35,7 @@ namespace BronOS\PhpSqlMigrations\Console\Command;
 
 
 use BronOS\PhpSqlDiscovery\Exception\PhpSqlDiscoveryException;
+use BronOS\PhpSqlMigrations\Exception\PhpSqlMigrationsException;
 use BronOS\PhpSqlSchema\Exception\DuplicateColumnException;
 use BronOS\PhpSqlSchema\Exception\DuplicateIndexException;
 use BronOS\PhpSqlSchema\Exception\DuplicateRelationException;
@@ -109,6 +110,7 @@ class GenerateCommand extends AbstractCommand
      * @throws DuplicateRelationException
      * @throws DuplicateTableException
      * @throws SQLTableSchemaDeclarationException
+     * @throws PhpSqlMigrationsException
      *
      * @see setCode()
      */
@@ -121,7 +123,6 @@ class GenerateCommand extends AbstractCommand
 
             $mq = $this->getServiceLocator()->getMigrationBuilder()->buildQueries(
                 $this->getServiceLocator()->getDatabaseSchema(),
-                $this->getConfig()->ignoreTables
             );
 
             if (is_null($mq)) {
@@ -142,8 +143,12 @@ class GenerateCommand extends AbstractCommand
         $path = $this->getServiceLocator()->getMigrationBuilder()->generate(
             $input->getArgument('name'),
             $this->getServiceLocator()->getDatabaseSchema(),
-            $this->getConfig()->ignoreTables
         );
+
+        if (is_null($path)) {
+            $style->error('No any diff queries has been found');
+            return self::FAILURE;
+        }
 
         $style->success($path);
 
