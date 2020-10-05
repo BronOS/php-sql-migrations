@@ -200,7 +200,7 @@ class TableDiffQueryBuilder implements TableDiffQueryBuilderInterface
         foreach ($schema->getColumns() as $column) {
             $q = $this->columnQB->buildSignature($column, $schema->getCharset() ?? $defaultCharset);
 
-            if (strpos('PRIMARY KEY', $q) !== false) {
+            if (strpos($q, 'PRIMARY KEY') !== false) {
                 $pkFlag = true;
             }
 
