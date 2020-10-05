@@ -30,7 +30,7 @@ class ColumnDiffQueryBuilderTest extends TestCase
             "My ID"
         ), "");
 
-        $this->assertEquals("`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'My ID'", $sig);
+        $this->assertEquals("`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT 'My ID'", $sig);
     }
 
     public function testBuildSignatureVarChar()
@@ -113,11 +113,11 @@ class ColumnDiffQueryBuilderTest extends TestCase
             false
         );
 
-        $diff = $differ->diff($clm1, $clm2);
+        $diff = $differ->diff($clm1, $clm2, '', '');
 
         $q = $qb->buildQuery($diff, 'post', 'latin1');
 
-        $this->assertEquals("ALTER TABLE 'post' CHANGE COLUMN `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT;", $q->getUpQueries()[0]);
-        $this->assertEquals("ALTER TABLE 'post' CHANGE COLUMN `id` INT(11) NOT NULL AUTO_INCREMENT;", $q->getDownQueries()[0]);
+        $this->assertEquals("ALTER TABLE `post` CHANGE COLUMN `id` `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY;", $q->getUpQueries()[0]);
+        $this->assertEquals("ALTER TABLE `post` CHANGE COLUMN `id` `id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY;", $q->getDownQueries()[0]);
     }
 }

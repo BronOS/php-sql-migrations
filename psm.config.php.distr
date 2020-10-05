@@ -39,5 +39,6 @@ $config = new PsmConfig();
 
 $config->migrationsPath = __DIR__ . '/tests/migrations';
 $config->schemaClass = PhpSqlMigrationsSchemaMock::class;
+$config->ignoreTables = ['user'];
 
 return $config;

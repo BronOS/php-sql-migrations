@@ -66,6 +66,7 @@ class PsmConfig
     public string $migrationsTable = 'migrations';
     public string $templateFilePath = __DIR__ . '/../../templates/migration.template';
     public ?string $schemaClass = null;
+    public array $ignoreTables = [];
 
     public string $pdoFactoryClass = PDOFactory::class;
     public string $databaseSchemaFactoryClass = ConfigDatabaseSchemaFactory::class;

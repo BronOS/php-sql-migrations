@@ -86,6 +86,13 @@ class BaseTestCase extends TestCase
             VALUES
                 (1, 'my blog 1');
 
+            DROP TABLE IF EXISTS `user`;
+            CREATE TABLE `user` (
+              `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+              `nickname` varchar(255) NOT NULL DEFAULT '',
+              PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+            
             SET FOREIGN_KEY_CHECKS=1;
         SQL;
 

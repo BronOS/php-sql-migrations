@@ -85,7 +85,6 @@ class DefaultMigrationBuilderFactory implements MigrationBuilderFactoryInterface
             $scanner,
             $differ,
             $migrationsDir,
-            $config
         );
     }
 }

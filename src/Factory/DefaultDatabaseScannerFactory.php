@@ -72,7 +72,8 @@ class DefaultDatabaseScannerFactory implements DatabaseScannerFactoryInterface
             new SQLTableScanner(
                 new TableRepository(
                     $pdo,
-                    $config->migrationsTable
+                    $config->migrationsTable,
+                    $config->ignoreTables
                 ),
                 new TableFactory(),
                 new DefaultSQLIndexScanner($pdo),

@@ -50,41 +50,41 @@ use PDO;
  */
 class TableRepository extends ScannerTableRepository
 {
-    private string $tableName;
+    private string $migrationsTableName;
+    private array $ignoreTables;
 
     /**
      * ColumnsRepository constructor.
      *
      * @param PDO    $pdo
-     * @param string $tableName
+     * @param string $migrationsTableName
+     * @param array  $ignoreTables
      */
-    public function __construct(PDO $pdo, string $tableName)
+    public function __construct(PDO $pdo, string $migrationsTableName, array $ignoreTables = [])
     {
         parent::__construct($pdo);
-        $this->tableName = $tableName;
+        $this->migrationsTableName = $migrationsTableName;
+        $this->ignoreTables = $ignoreTables;
     }
 
     /**
      * Find all table's info/metadata and returns it as a raw array.
      *
+     * @param array $ignoreTables
      * @return array
      *
      * @throws PhpSqlDiscoveryException
      */
-    public function findInfoAll(): array
+    public function findInfoAll(array $ignoreTables = []): array
     {
-        return $this->filterTable(parent::findInfoAll());
-    }
-
-    /**
-     * @param array $rows
-     *
-     * @return array
-     */
-    private function filterTable(array $rows): array
-    {
-        return array_filter($rows, function (array $row) {
-            return $row[TableFactoryInterface::KEY_TABLE_NAME] !== $this->tableName;
-        });
+        return parent::findInfoAll(
+            array_unique(
+                array_merge(
+                    [$this->migrationsTableName],
+                    $ignoreTables,
+                    $this->ignoreTables
+                )
+            )
+        );
     }
 }

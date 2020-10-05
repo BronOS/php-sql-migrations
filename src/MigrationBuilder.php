@@ -70,7 +70,6 @@ class MigrationBuilder implements MigrationBuilderInterface
     private SQLDatabaseScannerInterface $scanner;
     private SQLDatabaseDifferInterface $differ;
     private MigrationsDirInterface $migrationsDir;
-    private PsmConfig $config;
 
     /**
      * SQLMigrationBuilder constructor.
@@ -81,7 +80,6 @@ class MigrationBuilder implements MigrationBuilderInterface
      * @param SQLDatabaseScannerInterface       $scanner
      * @param SQLDatabaseDifferInterface        $differ
      * @param MigrationsDirInterface            $migrationsDir
-     * @param PsmConfig                         $config
      */
     public function __construct(
         PDO $pdo,
@@ -89,8 +87,7 @@ class MigrationBuilder implements MigrationBuilderInterface
         MigrationClassGeneratorInterface $classGenerator,
         SQLDatabaseScannerInterface $scanner,
         SQLDatabaseDifferInterface $differ,
-        MigrationsDirInterface $migrationsDir,
-        PsmConfig $config
+        MigrationsDirInterface $migrationsDir
     ) {
         $this->pdo = $pdo;
         $this->queryBuilder = $queryBuilder;
@@ -98,7 +95,38 @@ class MigrationBuilder implements MigrationBuilderInterface
         $this->differ = $differ;
         $this->classGenerator = $classGenerator;
         $this->migrationsDir = $migrationsDir;
-        $this->config = $config;
+    }
+
+    /**
+     * Finds diff between passed schema and DB state (with PDO).
+     * Generates new migration file if diff has been found
+     * and return file path of it or null otherwise.
+     *
+     * @param string|null                $name   Migration name
+     * @param SQLDatabaseSchemaInterface $schema Source database schema
+     *
+     * @return string|null
+     *
+     * @throws DuplicateColumnException
+     * @throws DuplicateIndexException
+     * @throws DuplicateRelationException
+     * @throws DuplicateTableException
+     * @throws PhpSqlDiscoveryException
+     * @throws SQLTableSchemaDeclarationException
+     * @throws PhpSqlMigrationsException
+     */
+    public function generate(?string $name, SQLDatabaseSchemaInterface $schema): ?string
+    {
+        $mq = $this->buildQueries($schema);
+
+        if (is_null($mq)) {
+            return null;
+        }
+
+        return $this->migrationsDir->create(
+            $this->generateMigrationName($name),
+            $this->classGenerator->generate($mq)
+        );
     }
 
     /**
@@ -140,55 +168,6 @@ class MigrationBuilder implements MigrationBuilderInterface
     }
 
     /**
-     * Finds diff between passed schema and DB state (with PDO).
-     * Generates new migration file if diff has been found
-     * and return file path of it or null otherwise.
-     *
-     * @param string|null                $name   Migration name
-     * @param SQLDatabaseSchemaInterface $schema Source database schema
-     *
-     * @return string|null
-     *
-     * @throws DuplicateColumnException
-     * @throws DuplicateIndexException
-     * @throws DuplicateRelationException
-     * @throws DuplicateTableException
-     * @throws PhpSqlDiscoveryException
-     * @throws SQLTableSchemaDeclarationException
-     * @throws PhpSqlMigrationsException
-     */
-    public function generate(?string $name, SQLDatabaseSchemaInterface $schema): ?string
-    {
-        $mq = $this->buildQueries($schema);
-
-        if (is_null($mq)) {
-            return null;
-        }
-
-        return $this->migrationsDir->create(
-            $this->generateMigrationName($name),
-            $this->classGenerator->generate($mq)
-        );
-    }
-
-    /**
-     * Generates new empty migration file and returns file path of it.
-     *
-     * @param string|null $name Migration name
-     *
-     * @return string
-     *
-     * @throws PhpSqlMigrationsException
-     */
-    public function generateEmpty(?string $name = null): string
-    {
-        return $this->migrationsDir->create(
-            $this->generateMigrationName($name),
-            $this->classGenerator->generate(new MigrationQuery([], []))
-        );
-    }
-
-    /**
      * @param string|null $name
      * @param int         $i
      *
@@ -226,5 +205,22 @@ class MigrationBuilder implements MigrationBuilderInterface
     private function normalizeName(string $name): string
     {
         return preg_replace('/[^A-Za-z0-9\-]/', '_', $name);
+    }
+
+    /**
+     * Generates new empty migration file and returns file path of it.
+     *
+     * @param string|null $name Migration name
+     *
+     * @return string
+     *
+     * @throws PhpSqlMigrationsException
+     */
+    public function generateEmpty(?string $name = null): string
+    {
+        return $this->migrationsDir->create(
+            $this->generateMigrationName($name),
+            $this->classGenerator->generate(new MigrationQuery([], []))
+        );
     }
 }

@@ -120,7 +120,8 @@ class GenerateCommand extends AbstractCommand
             $style->warning("Dry run mode. Migration script hasn't been generated.");
 
             $mq = $this->getServiceLocator()->getMigrationBuilder()->buildQueries(
-                $this->getServiceLocator()->getDatabaseSchema()
+                $this->getServiceLocator()->getDatabaseSchema(),
+                $this->getConfig()->ignoreTables
             );
 
             if (is_null($mq)) {
@@ -140,7 +141,8 @@ class GenerateCommand extends AbstractCommand
 
         $path = $this->getServiceLocator()->getMigrationBuilder()->generate(
             $input->getArgument('name'),
-            $this->getServiceLocator()->getDatabaseSchema()
+            $this->getServiceLocator()->getDatabaseSchema(),
+            $this->getConfig()->ignoreTables
         );
 
         $style->success($path);

@@ -4,13 +4,23 @@ namespace BronOS\PhpSqlMigrations\Tests;
 
 
 use BronOS\PhpSqlDiff\DefaultSQLDatabaseDiffer;
+use BronOS\PhpSqlDiscovery\DefaultSQLColumnScanner;
 use BronOS\PhpSqlDiscovery\DefaultSQLDatabaseScanner;
+use BronOS\PhpSqlDiscovery\DefaultSQLIndexScanner;
+use BronOS\PhpSqlDiscovery\DefaultSQLRelationScanner;
+use BronOS\PhpSqlDiscovery\Factory\DatabaseFactory;
+use BronOS\PhpSqlDiscovery\Factory\TableFactory;
+use BronOS\PhpSqlDiscovery\Repository\DefaultsRepository;
+use BronOS\PhpSqlDiscovery\SQLDatabaseScanner;
+use BronOS\PhpSqlDiscovery\SQLTableScanner;
 use BronOS\PhpSqlMigrations\CodeGenerator\DefaultTemplateMigrationClassGenerator;
 use BronOS\PhpSqlMigrations\DefaultMigrationBuilder;
 use BronOS\PhpSqlMigrations\Exception\PhpSqlMigrationsException;
 use BronOS\PhpSqlMigrations\FS\MigrationsDir;
 use BronOS\PhpSqlMigrations\MigrationBuilder;
+use BronOS\PhpSqlMigrations\MigrationBuilderInterface;
 use BronOS\PhpSqlMigrations\QueryBuilder\DefaultDatabaseDiffQueryBuilder;
+use BronOS\PhpSqlMigrations\Repository\TableRepository;
 use BronOS\PhpSqlSchema\Column\DateTime\DateTimeColumn;
 use BronOS\PhpSqlSchema\Column\DateTime\TimestampColumn;
 use BronOS\PhpSqlSchema\Column\Numeric\IntColumn;
@@ -29,14 +39,7 @@ class MigrationBuilderTest extends BaseTestCase
 {
     public function testBuildQueriesNoDiff()
     {
-        $builder = new MigrationBuilder(
-            $this->getPdo(),
-            new DefaultDatabaseDiffQueryBuilder(),
-            new DefaultTemplateMigrationClassGenerator(),
-            new DefaultSQLDatabaseScanner($this->getPdo()),
-            new DefaultSQLDatabaseDiffer(),
-            new MigrationsDir(__DIR__ . DIRECTORY_SEPARATOR . 'migrations'),
-        );
+        $builder = $this->getBuilder();
 
         $mq = $builder->buildQueries(new SQLDatabaseSchema('php-sql-migration', [
             new SQLTableSchema('blog', [
@@ -49,7 +52,7 @@ class MigrationBuilderTest extends BaseTestCase
                 new VarCharColumn('title', 200),
                 new TextColumn('description', false, true, true),
                 new DateTimeColumn('created_at', true),
-                new TimestampColumn('updated_at', false, true, '0000-00-00 00:00:00'),
+                new TimestampColumn('updated_at', false, false, true, '0000-00-00 00:00:00'),
                 new VarCharColumn('keywords', 255, true, VarCharColumn::NULL_KEYWORD),
                 new TinyIntColumn('unq_1', 1, false, false, false, null, false, 'Unique idx 1'),
                 new IntColumn('unq_2', 11, true, false, false, null, true, 'Unique idx 2'),
@@ -66,14 +69,7 @@ class MigrationBuilderTest extends BaseTestCase
 
     public function testGenerate()
     {
-        $builder = new MigrationBuilder(
-            $this->getPdo(),
-            new DefaultDatabaseDiffQueryBuilder(),
-            new DefaultTemplateMigrationClassGenerator(),
-            new DefaultSQLDatabaseScanner($this->getPdo()),
-            new DefaultSQLDatabaseDiffer(),
-            new MigrationsDir(__DIR__ . DIRECTORY_SEPARATOR . 'migrations'),
-        );
+        $builder = $this->getBuilder();
 
         $mfp = $builder->generate(null, new SQLDatabaseSchema('php-sql-migration', [
             new SQLTableSchema('blog', [
@@ -86,7 +82,7 @@ class MigrationBuilderTest extends BaseTestCase
                 new VarCharColumn('title', 250),
                 new TextColumn('description', false, true, true),
                 new DateTimeColumn('created_at', true),
-                new TimestampColumn('updated_at', false, true, '0000-00-00 00:00:00'),
+                new TimestampColumn('updated_at', false, false, true, '0000-00-00 00:00:00'),
                 new VarCharColumn('keywords', 255, true, VarCharColumn::NULL_KEYWORD),
                 new TinyIntColumn('unq_1', 1, false, false, false, null, false, 'Unique idx 1'),
                 new IntColumn('unq_2', 11, true, false, false, null, true, 'Unique idx 2'),
@@ -115,7 +111,7 @@ return new class($pdo) extends AbstractMigration
      */
     public function up(): void
     {
-        $this->run("ALTER TABLE `post` CHANGE COLUMN `title` VARCHAR(250) NOT NULL;");
+        $this->run("ALTER TABLE `post` CHANGE COLUMN `title` `title` VARCHAR(250) NOT NULL;");
     }
 
     /**
@@ -123,7 +119,7 @@ return new class($pdo) extends AbstractMigration
      */
     public function down(): void
     {
-        $this->run("ALTER TABLE `post` CHANGE COLUMN `title` VARCHAR(200) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT \'\';");
+        $this->run("ALTER TABLE `post` CHANGE COLUMN `title` `title` VARCHAR(200) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT \'\';");
     }
 };
 ';
@@ -134,14 +130,7 @@ return new class($pdo) extends AbstractMigration
 
     public function testEmpty()
     {
-        $builder = new MigrationBuilder(
-            $this->getPdo(),
-            new DefaultDatabaseDiffQueryBuilder(),
-            new DefaultTemplateMigrationClassGenerator(),
-            new DefaultSQLDatabaseScanner($this->getPdo()),
-            new DefaultSQLDatabaseDiffer(),
-            new MigrationsDir(__DIR__ . DIRECTORY_SEPARATOR . 'migrations'),
-        );
+        $builder = $this->getBuilder();
 
         $mfp = $builder->generateEmpty('MyTest Migration');
         $res = file_get_contents($mfp);
@@ -178,27 +167,30 @@ return new class($pdo) extends AbstractMigration
         unlink($mfp);
     }
 
-    public function testXXX()
+    private function getBuilder(): MigrationBuilderInterface
     {
         $pdo = $this->getPdo();
-
-        try {
-            $sth = $pdo->prepare('SELECT * FROM blog WHERE title LOKE ?');
-            $sth->bindValue(1, 'title');
-            if ($sth === false) {
-                throw new PDOException("Cannot prepare sql statement");
-            }
-
-//            return $sth;
-
-//            $sth->execute([]);
-        } catch (PDOException $e) {
-            throw new PhpSqlMigrationsException($e->getMessage(), (int)$e->getCode(), $e);
-        }
-
-        echo "<pre>";
-        var_dump($sth->debugDumpParams());
-        echo "</pre>";
-        die();
+        return new MigrationBuilder(
+            $pdo,
+            new DefaultDatabaseDiffQueryBuilder(),
+            new DefaultTemplateMigrationClassGenerator(),
+            new SQLDatabaseScanner(
+                new SQLTableScanner(
+                    new TableRepository(
+                        $pdo,
+                        'migrations',
+                        ['user']
+                    ),
+                    new TableFactory(),
+                    new DefaultSQLIndexScanner($pdo),
+                    new DefaultSQLRelationScanner($pdo),
+                    new DefaultSQLColumnScanner($pdo)
+                ),
+                new DefaultsRepository($pdo),
+                new DatabaseFactory()
+            ),
+            new DefaultSQLDatabaseDiffer(),
+            new MigrationsDir(__DIR__ . DIRECTORY_SEPARATOR . 'migrations'),
+        );
     }
 }
