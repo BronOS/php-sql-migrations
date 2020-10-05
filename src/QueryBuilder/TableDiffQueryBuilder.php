@@ -35,6 +35,7 @@ namespace BronOS\PhpSqlMigrations\QueryBuilder;
 
 
 use BronOS\PhpSqlDiff\Diff\TableDiff;
+use BronOS\PhpSqlSchema\Column\ColumnInterface;
 use BronOS\PhpSqlSchema\Index\PrimaryKeyInterface;
 use BronOS\PhpSqlSchema\SQLTableSchemaInterface;
 
@@ -195,23 +196,18 @@ class TableDiffQueryBuilder implements TableDiffQueryBuilderInterface
         $query .= sprintf("CREATE TABLE `%s` (\n", $schema->getName());
 
         $parts = [];
-        $pkFlag = false;
 
         foreach ($schema->getColumns() as $column) {
             $q = $this->columnQB->buildSignature($column, $schema->getCharset() ?? $defaultCharset);
 
-            if (strpos($q, 'PRIMARY KEY') !== false) {
-                $pkFlag = true;
+            if (strpos($q, 'PRIMARY KEY') !== false && $this->isInPk($schema, $column)) {
+                $q = str_replace('PRIMARY KEY', '', $q);
             }
 
             $parts[] = $q;
         }
 
         foreach ($schema->getIndexes() as $index) {
-            if ($pkFlag && $index instanceof PrimaryKeyInterface) {
-                continue;
-            }
-
             $parts[] = $this->indexQB->buildSignature($index);
         }
 
@@ -237,6 +233,17 @@ class TableDiffQueryBuilder implements TableDiffQueryBuilderInterface
             "SET AUTOCOMMIT = 1;\n" .
             "SET FOREIGN_KEY_CHECKS = 1;\n" .
             "SET UNIQUE_CHECKS = 1;\n";
+    }
+
+    private function isInPk(SQLTableSchemaInterface $schema, ColumnInterface $column): bool
+    {
+        foreach ($schema->getIndexes() as $index) {
+            if ($index instanceof PrimaryKeyInterface && in_array($column->getName(), $index->getFields())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
