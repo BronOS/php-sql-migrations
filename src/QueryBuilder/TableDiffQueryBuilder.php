@@ -265,7 +265,13 @@ class TableDiffQueryBuilder implements TableDiffQueryBuilderInterface
      */
     private function getDropTable(string $tableName): string
     {
-        return sprintf("DROP TABLE `%s`;", $tableName);
+        return sprintf("SET AUTOCOMMIT = 0;\n" .
+            "SET FOREIGN_KEY_CHECKS = 0;\n" .
+            "SET UNIQUE_CHECKS = 0;\n" .
+            "DROP TABLE `%s`;" .
+            "SET AUTOCOMMIT = 1;\n" .
+            "SET FOREIGN_KEY_CHECKS = 1;\n" .
+            "SET UNIQUE_CHECKS = 1;\n", $tableName);
     }
 
     /**
