@@ -29,10 +29,10 @@
   "autoload-dev": {
     "psr-4": {
       "BronOS\\PhpSqlMigrations\\Tests\\": "tests/"
-    },
-    "scripts": {
-      "test": "vendor/bin/phpunit --coverage-clover=coverage.xml"
     }
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit --coverage-clover=coverage.xml"
   },
   "bin": [
     "bin/psm"
