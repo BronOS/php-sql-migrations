@@ -101,13 +101,13 @@ class IndexDiffQueryBuilder implements IndexDiffQueryBuilderInterface
         if ($diff->getDiffType()->isDeleted()) {
             return new MigrationQuery(
                 [
-                    sprintf("ALTER TABLE '%s' DROP %s;",
+                    sprintf("ALTER TABLE %s DROP %s;",
                         $tableName,
                         $this->buildDropSignature($diff->getTargetObject())
                     ),
                 ],
                 [
-                    sprintf("ALTER TABLE '%s' ADD %s;",
+                    sprintf("ALTER TABLE %s ADD %s;",
                         $tableName,
                         $this->buildSignature($diff->getTargetObject())
                     ),
@@ -118,13 +118,13 @@ class IndexDiffQueryBuilder implements IndexDiffQueryBuilderInterface
         if ($diff->getDiffType()->isNew()) {
             return new MigrationQuery(
                 [
-                    sprintf("ALTER TABLE '%s' ADD %s;",
+                    sprintf("ALTER TABLE %s ADD %s;",
                         $tableName,
                         $this->buildSignature($diff->getSourceObject())
                     ),
                 ],
                 [
-                    sprintf("ALTER TABLE '%s' DROP %s;",
+                    sprintf("ALTER TABLE %s DROP %s;",
                         $tableName,
                         $this->buildDropSignature($diff->getSourceObject())
                     ),
@@ -134,21 +134,21 @@ class IndexDiffQueryBuilder implements IndexDiffQueryBuilderInterface
 
         return new MigrationQuery(
             [
-                sprintf("ALTER TABLE '%s' DROP %s;",
+                sprintf("ALTER TABLE %s DROP %s;",
                     $tableName,
                     $this->buildDropSignature($diff->getTargetObject())
                 ),
-                sprintf("ALTER TABLE '%s' ADD %s;",
+                sprintf("ALTER TABLE %s ADD %s;",
                     $tableName,
                     $this->buildSignature($diff->getSourceObject())
                 ),
             ],
             [
-                sprintf("ALTER TABLE '%s' DROP %s;",
+                sprintf("ALTER TABLE %s DROP %s;",
                     $tableName,
                     $this->buildDropSignature($diff->getSourceObject())
                 ),
-                sprintf("ALTER TABLE '%s' ADD %s;",
+                sprintf("ALTER TABLE %s ADD %s;",
                     $tableName,
                     $this->buildSignature($diff->getTargetObject())
                 ),
