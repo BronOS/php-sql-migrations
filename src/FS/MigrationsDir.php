@@ -79,11 +79,13 @@ class MigrationsDir implements MigrationsDirInterface
 
         foreach (new FilesystemIterator($this->getPath()) as $fileInfo) {
             if ($fileInfo->isFile() && $fileInfo->getExtension() === 'php') {
-                $migrationFileList[] = $fileInfo;
+                $migrationFileList[$fileInfo->getFilename()] = $fileInfo;
             }
         }
 
-        return $migrationFileList;
+        ksort($migrationFileList);
+
+        return array_values($migrationFileList);
     }
 
     /**
